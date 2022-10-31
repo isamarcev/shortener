@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 import re
 
 from django.shortcuts import render
+from django.urls import reverse_lazy
 from django.views.generic import TemplateView
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -14,24 +15,33 @@ from django.http import HttpResponseRedirect, JsonResponse
 from shortener.settings import env
 # Create your views here.
 
-client = pymongo.MongoClient(env('MONGO_STRING'))
-db = client[env('DB_NAME')]
-collection = db[env('DB_COLLECTION')]
+# client = pymongo.MongoClient(env('MONGO_STRING'))
+# db = client[env('DB_NAME')]
+# collection = db[env('DB_COLLECTION')]
 
 
 class MainPageView(TemplateView):
     template_name = 'api_shortener/main_page.html'
 
     def get(self, request, *args, **kwargs):
-        return render(request, self.template_name)
+        exist = request.GET.get('exist')
+        if exist:
+            context = {'doesnotexists': True}
+            return render(request, self.template_name, context)
+        else:
+            return render(request, self.template_name)
 
 
 def redirect(request, key):
     url = collection.find_one({'key': key})
+    if not url or len(key) != 5:
+        return HttpResponseRedirect(
+            f'{reverse_lazy("start_page")}?exist=False')
     new_count = url['counter'] + 1
     collection.update_one({'key': key}, {'$set':
                                              {'counter': new_count}})
     return HttpResponseRedirect(url['url'])
+
 
 
 def generate_key():
