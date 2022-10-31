@@ -5,6 +5,7 @@ from .converter import StringConverter
 register_converter(StringConverter, 'urls')
 
 urlpatterns = [
-    path('<urls:key>/', views.index),
+    path('', views.redirect, name='start_page'),
+    path('<urls:key>/', views.redirect),
     path('api/shorter/', views.ShortUrlViewSet.as_view()),
 ]

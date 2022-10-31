@@ -1,7 +1,10 @@
 import string
 from random import choice
 from datetime import datetime, timedelta
+import re
 
+from django.views.generic import TemplateView
+from rest_framework.reverse import reverse_lazy
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
@@ -15,6 +18,7 @@ client = pymongo.MongoClient(env('MONGO_STRING'))
 db = client[env('DB_NAME')]
 collection = db[env('DB_COLLECTION')]
 
+
 def generate_key():
     chars = string.digits + string.ascii_letters
     key = ''.join([choice(chars) for _ in range(5)])
@@ -24,8 +28,28 @@ def generate_key():
     else:
         return generate_key()
 
-data_model = { '_id': int, 'url': 'https...', 'key': 'short_url',
-               'expireAt': 'Date', 'IP': 'ip', 'counter': int }
+
+def redirect(request, key):
+    url = collection.find_one({'key': key})
+    new_count = url['counter'] + 1
+    collection.update_one({'key': key}, {'$set':
+                                            {'counter': new_count}})
+    return HttpResponseRedirect(url['url'])
+
+
+regex_link = "^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.\n" \
+             "[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)$"
+
+
+def validation_link(link):
+    pattern = re.compile(regex_link)
+    result = pattern.findall(link)
+    return result
+
+
+def validation_date(date):
+    if date.isdigit() and all([int(date) < 365, int(date) > 1]):
+        return date
 
 
 def get_ip_address(request):
@@ -35,14 +59,6 @@ def get_ip_address(request):
     else:
         ip = request.META.get('REMOTE_ADDR')
     return ip
-
-
-def index(request, key):
-    url = collection.find_one({'key': key})
-    new_count = url['counter'] + 1
-    collection.update_one({'key': key}, {'$set':
-                                            {'counter': new_count}})
-    return HttpResponseRedirect(url['url'])
 
 
 class ShortUrlViewSet(APIView):
@@ -60,13 +76,23 @@ class ShortUrlViewSet(APIView):
     def post(self, request):
         """Create shortURL"""
         data = dict()
-        data['url'] = request.POST.get('url')
+        errors = dict()
+        url = request.POST.get('url')
+        if validation_link(url):
+            data['url'] = request.POST.get('url')
+        else:
+            errors['url'] = 'Incorrect URL entered'
         data['key'] = generate_key()
         date = request.POST.get('expireAt')
-        if not date:
-            date = datetime.now() + timedelta(days=90)
-        data['expireAt'] = date
+        if date:
+            if validation_date(date):
+                data['expireAt'] = datetime.now() + timedelta(days=date)
+            else:
+                errors['date'] = 'Entered incorrect date. Please try more'
+                return JsonResponse({'errors': errors})
         data['ip'] = get_ip_address(request)
         data['counter'] = 0
         collection.insert_one(data)
-        return JsonResponse({'short_url': f'{ALLOWED_HOSTS[0]}:8000/{data["key"]}/'})
+        return Response(
+            {'short_url': f'{request.get_host()}/{data["key"]}/'})
+
