@@ -14,7 +14,7 @@ from django.http import HttpResponseRedirect, JsonResponse
 from shortener.settings import env
 # Create your views here.
 
-client = pymongo.MongoClient('mongodb://localhost:27017')
+client = pymongo.MongoClient(env('MONGO_STRING'))
 db = client[env('DB_NAME')]
 collection = db[env('DB_COLLECTION')]
 

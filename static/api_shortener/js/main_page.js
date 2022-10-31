@@ -43,14 +43,10 @@ function getList() {
         url: ShortenerLink,
         type: 'get',
         data: {
-
-            // 'url': linkUrl.val(),
-            // 'expireAt': dateDuration.val()
-
         },
         success: (data) => {
             console.log(data)
-            if (data.short_url) {
+            if (data.list_urls) {
                 var answerBlock = $('#answer');
                 answerBlock.empty();
                 answerBlock.append(
