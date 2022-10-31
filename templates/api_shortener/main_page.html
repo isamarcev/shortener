@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Shortener</title>
+        <!-- BOOTSTRAP CSS -->
+
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+    <link rel="stylesheet" href="../../static/api_shortener/css/main_page.css">
+</head>
+<body>
+    <div class="container">
+        <div class="row" style="justify-content: center;">
+            <div class="col-6">
+                <div class="box">
+                    <h3>Укороти ссылку и получи супер приз - Короткую ссылку</h3>
+                    <div class="form-group">
+                        <label for="url_field">Введите ссылку:</label>
+                        <input type="text" class="form-control" id="url_field" placeholder="https://www.youtube.com/watch?v=bgbH4FAmAA0">
+                        <div class="error-message">
+
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="expireAt">Введите кол-во дней (по умолчанию 90):</label>
+                        <input type="text" id="expireAt" class="form-control" placeholder="От 1 до 365">
+                        <div class="error-message">
+
+                        </div>
+                    </div>
+                    <div class="row" style="justify-content: center">
+                        <button class="btn btn-success" style="width: 200px" id="createUrl" >Создать ссылку</button>
+                    </div>
+                    <div class="answer-block">
+
+                        <div class="form-group" id="answer">
+
+                        </div>
+                    </div>
+                    <div class="row" style="justify-content: center">
+                        <button class="btn btn-default" style="width: 200px" id="getList" >Показать созданные ссылки</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+<script src="https://code.jquery.com/jquery-3.6.1.js" integrity="sha256-3zlB5s2uwoUzrXK3BT7AX3FyvojsraNFxCc2vC/7pNI=" crossorigin="anonymous"></script>
+    <script>
+        const ShortenerLink = '{% url 'shortener' %}'
+    </script>
+<script src="../api_shortener/../../static/api_shortener/js/main_page.js"></script>
+</body>
+</html>

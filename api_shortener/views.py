@@ -3,23 +3,39 @@ from random import choice
 from datetime import datetime, timedelta
 import re
 
+from django.shortcuts import render
 from django.views.generic import TemplateView
-from rest_framework.reverse import reverse_lazy
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
 import pymongo
 from django.http import HttpResponseRedirect, JsonResponse
 
-from shortener.settings import env, ALLOWED_HOSTS
+from shortener.settings import env
 # Create your views here.
 
-client = pymongo.MongoClient(env('MONGO_STRING'))
+client = pymongo.MongoClient('mongodb://localhost:27017')
 db = client[env('DB_NAME')]
 collection = db[env('DB_COLLECTION')]
 
 
+class MainPageView(TemplateView):
+    template_name = 'api_shortener/main_page.html'
+
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name)
+
+
+def redirect(request, key):
+    url = collection.find_one({'key': key})
+    new_count = url['counter'] + 1
+    collection.update_one({'key': key}, {'$set':
+                                             {'counter': new_count}})
+    return HttpResponseRedirect(url['url'])
+
+
 def generate_key():
+    """Generate unique key"""
     chars = string.digits + string.ascii_letters
     key = ''.join([choice(chars) for _ in range(5)])
     elements = collection.find_one({'key': key})
@@ -27,18 +43,9 @@ def generate_key():
         return key
     else:
         return generate_key()
+    # return key
 
-
-def redirect(request, key):
-    url = collection.find_one({'key': key})
-    new_count = url['counter'] + 1
-    collection.update_one({'key': key}, {'$set':
-                                            {'counter': new_count}})
-    return HttpResponseRedirect(url['url'])
-
-
-regex_link = "^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.\n" \
-             "[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)$"
+regex_link = "^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.\n[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)$"
 
 
 def validation_link(link):
@@ -67,7 +74,7 @@ class ShortUrlViewSet(APIView):
         pass
 
     def get(self, request):
-        """Get info by IP"""
+        """Get info by IP and return all link for this user"""
         ip = get_ip_address(self.request)
         list_date = collection.find({'ip': ip}, {'_id': False})
         answer = [value for value in list_date]
@@ -86,13 +93,17 @@ class ShortUrlViewSet(APIView):
         date = request.POST.get('expireAt')
         if date:
             if validation_date(date):
-                data['expireAt'] = datetime.now() + timedelta(days=date)
+                data['expireAt'] = datetime.now() + timedelta(days=int(date))
             else:
-                errors['date'] = 'Entered incorrect date. Please try more'
-                return JsonResponse({'errors': errors})
+                errors['expireAt'] = 'Entered incorrect date. Please try more'
         data['ip'] = get_ip_address(request)
         data['counter'] = 0
-        collection.insert_one(data)
-        return Response(
-            {'short_url': f'{request.get_host()}/{data["key"]}/'})
+        if errors:
+            return JsonResponse({'errors': errors})
+        else:
+            collection.insert_one(data)
+            return Response(
+                {'short_url': f'{request.get_host()}/{data["key"]}/'})
+
+
 
