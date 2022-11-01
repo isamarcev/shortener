@@ -1,0 +1,30 @@
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group > label {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.box {
+    margin: 300px auto 50px auto;
+    background-color: #bccbff;
+    border-radius: 10px;
+    padding: 40px;
+}
+
+.error-message {
+    color: #ff4143;
+    font-weight: bolder;
+    font-size: 13px;
+}
+
+.does-not-exists {
+    color: red;
+    text-align: center;
+}
+
+.does-not-exists > h5 {
+    font-size: 20px;
+}
