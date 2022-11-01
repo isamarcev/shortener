@@ -10,9 +10,12 @@ class Command(BaseCommand):
     help = "create DB and table from .env file"
 
     def handle(self, *args, **options):
-        db.createCollection(env('DB_COLLECTION'), {'max': 1000000})
-        collection.create_index([('expireAt', pymongo.DESCENDING)],
-                                expireAfterSeconds=one_day*90)
+        db.create_collection(env('DB_COLLECTION'), capped=True, max=1000000,
+                             size=1000000)
+        db[env('DB_COLLECTION')].create_index([('expireAt', 1)],
+                                              expireAfterSeconds=2)
+        # collection.create_index('expireAt',
+        #                         expireAfterSeconds=0)
         collection.create_index([('key', pymongo.ASCENDING)], unique=True)
 
 

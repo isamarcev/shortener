@@ -8,7 +8,7 @@
 }
 
 .box {
-    margin: 300px auto;
+    margin: 300px auto 50px auto;
     background-color: #bccbff;
     border-radius: 10px;
     padding: 40px;
@@ -18,4 +18,13 @@
     color: #ff4143;
     font-weight: bolder;
     font-size: 13px;
+}
+
+.does-not-exists {
+    color: red;
+    text-align: center;
+}
+
+.does-not-exists > h5 {
+    font-size: 20px;
 }

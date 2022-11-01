@@ -7,7 +7,13 @@ const GetListButton = document.getElementById('getList')
 
 function sendUrl() {
     var linkUrl = $('#url_field');
-    var dateDuration = $('#expireAt')
+    var dateDuration = $('#expireAt');
+    var doesNotExists = $('.does-not-exists');
+    doesNotExists.css('display', 'none')
+    var errorUrl = $('.error-message-url');
+    errorUrl.empty()
+    var errorDate = $('.error-message-date');
+    errorDate.empty()
     $.ajax({
         url: ShortenerLink,
         type: 'post',
@@ -27,8 +33,8 @@ function sendUrl() {
             } else if (data.errors) {
                 linkUrl.empty();
                 dateDuration.empty();
-                linkUrl.next().append(data.errors.url);
-                dateDuration.next().append(data.errors.expireAt);
+                errorUrl.append(data.errors.url);
+                errorDate.append(data.errors.expireAt);
             }
         },
         errors: (errors) => {
@@ -37,28 +43,28 @@ function sendUrl() {
     })
 }
 
+var TableBody = $('tbody')
 
 function getList() {
+    var tableLink = $('#all-link');
+    TableBody.empty()
     $.ajax({
         url: ShortenerLink,
         type: 'get',
         data: {
         },
         success: (data) => {
-            console.log(data)
-            if (data.list_urls) {
-                var answerBlock = $('#answer');
-                answerBlock.empty();
-                answerBlock.append(
-                    '<label for="expireAt">Вот и Ваша ссылка:</label>',
-                    '<input type="text" class="form-control" value="' + data.short_url + '">'
-                );
-            } else if (data.errors) {
-                linkUrl.empty();
-                dateDuration.empty();
-                linkUrl.next().append(data.errors.url);
-                dateDuration.next().append(data.errors.expireAt);
+            if (data) {
+                $(data).each(function (index, value) {
+                        tableLink.append(
+                            '<tr><td>'+ value.url +'</td><td>'+ document.location.origin + '/' + value.key +'</td><td>'+ value.counter +'</td></tr>'
+                        )
+                    })
+                tableLink.css('display', 'table')
+            } else {
+                alert("Вы еще не создали ни одной ссылки.")
             }
+
         },
         errors: (errors) => {
             console.log(errors)

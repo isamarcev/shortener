@@ -8,16 +8,16 @@ from django.urls import reverse_lazy
 from django.views.generic import TemplateView
 from rest_framework.views import APIView
 from rest_framework.response import Response
-
-import pymongo
 from django.http import HttpResponseRedirect, JsonResponse
 
-from shortener.settings import env
-# Create your views here.
+import pymongo
 
-# client = pymongo.MongoClient(env('MONGO_STRING'))
-# db = client[env('DB_NAME')]
-# collection = db[env('DB_COLLECTION')]
+from shortener.settings import env
+
+
+client = pymongo.MongoClient(env('MONGO_STRING'))
+db = client[env('DB_NAME')]
+collection = db[env('DB_COLLECTION')]
 
 
 class MainPageView(TemplateView):
@@ -34,7 +34,7 @@ class MainPageView(TemplateView):
 
 def redirect(request, key):
     url = collection.find_one({'key': key})
-    if not url or len(key) != 5:
+    if len(key) != 5 or not url:
         return HttpResponseRedirect(
             f'{reverse_lazy("start_page")}?exist=False')
     new_count = url['counter'] + 1
@@ -55,12 +55,11 @@ def generate_key():
         return generate_key()
     # return key
 
-regex_link = "^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.\n[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)$"
+url_pattern = "^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)$"
 
 
 def validation_link(link):
-    pattern = re.compile(regex_link)
-    result = pattern.findall(link)
+    result = re.match(url_pattern, link)
     return result
 
 
