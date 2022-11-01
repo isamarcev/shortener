@@ -8,7 +8,7 @@ from django.urls import reverse_lazy
 from django.views.generic import TemplateView
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect
 
 import pymongo
 
@@ -43,7 +43,6 @@ def redirect(request, key):
     return HttpResponseRedirect(url['url'])
 
 
-
 def generate_key():
     """Generate unique key"""
     chars = string.digits + string.ascii_letters
@@ -53,7 +52,7 @@ def generate_key():
         return key
     else:
         return generate_key()
-    # return key
+
 
 url_pattern = "^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)$"
 
@@ -64,7 +63,7 @@ def validation_link(link):
 
 
 def validation_date(date):
-    if date.isdigit() and all([int(date) < 365, int(date) > 1]):
+    if all([date.isdigit(), int(date) < 365, int(date) > 1]):
         return date
 
 
@@ -90,7 +89,7 @@ class ShortUrlViewSet(APIView):
         return Response(answer)
 
     def post(self, request):
-        """Create shortURL"""
+        """Create shortURL and dump to DB"""
         data = dict()
         errors = dict()
         url = request.POST.get('url')
@@ -99,20 +98,18 @@ class ShortUrlViewSet(APIView):
         else:
             errors['url'] = 'Incorrect URL entered'
         data['key'] = generate_key()
-        date = request.POST.get('expireAt')
-        if date:
-            if validation_date(date):
-                data['expireAt'] = datetime.now() + timedelta(days=int(date))
-            else:
+        expire_at = request.POST.get('expireAt')
+        if expire_at:
+            if not validation_date(expire_at):
                 errors['expireAt'] = 'Entered incorrect date. Please try more'
+        else:
+            expire_at = 90
         data['ip'] = get_ip_address(request)
         data['counter'] = 0
         if errors:
-            return JsonResponse({'errors': errors})
-        else:
-            collection.insert_one(data)
-            return Response(
-                {'short_url': f'{request.get_host()}/{data["key"]}/'})
-
-
-
+            return Response({'errors': errors})
+        data['expireAt'] = datetime.utcnow() + timedelta(
+            days=int(expire_at))
+        collection.insert_one(data)
+        return Response(
+            {'short_url': f'{request.get_host()}/{data["key"]}/'})

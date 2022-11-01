@@ -14,6 +14,8 @@ function sendUrl() {
     errorUrl.empty()
     var errorDate = $('.error-message-date');
     errorDate.empty()
+    var answerBlock = $('#answer');
+    answerBlock.empty();
     $.ajax({
         url: ShortenerLink,
         type: 'post',
@@ -24,8 +26,6 @@ function sendUrl() {
         success: (data) => {
             console.log(data)
             if (data.short_url) {
-                var answerBlock = $('#answer');
-                answerBlock.empty();
                 answerBlock.append(
                     '<label for="expireAt">Вот и Ваша ссылка:</label>',
                     '<input type="text" class="form-control" value="' + data.short_url + '">'
