@@ -23,11 +23,22 @@ $ pip install -r requirements.txt
 $ python manage.py create_db
 $ python manage.py runserver (or) $ make r
 ```
+____
   
-  Functionality to work with API interface is: send request on HOSTNAME:PORT/api/shorter/.
+## API interface
+Functionality to work with API interface is: send request on HOSTNAME:PORT/api/shorter/.
 
-  GET request without parameters returns list of created links by request`s IP address.
+  **GET request** without parameters returns list of created links by request`s IP address.
   
-  POST request should contains from required field 'url' with long URL which you like to make shorter and non requered field expireAt with number(!!!) from 1 to 365. This figure means the lifetime (storage of the link on the server) - dafault 90 days.
-  
+  **POST request** should contains from required field 'url' with long URL which you like to make shorter and non requered field 'expireAt' with number(!!!) from 1 to 365. This figure means the lifetime (storage of the link on the server) - dafault 90 days.
+## Testing
+For run testing needed install next package:
+```
+$ pip install pytest
+$ pip install pytest-django
+```
+and then run:
+```
+$ pytest -v
+```
 
