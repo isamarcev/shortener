@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     'api_shortener'
 ]
 
+
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

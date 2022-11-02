@@ -2,6 +2,7 @@ import string
 from random import choice
 from datetime import datetime, timedelta
 import re
+from rest_framework import serializers
 
 from django.shortcuts import render
 from django.urls import reverse_lazy
@@ -86,7 +87,7 @@ class ShortUrlViewSet(APIView):
         ip = get_ip_address(self.request)
         list_date = collection.find({'ip': ip}, {'_id': False})
         answer = [value for value in list_date]
-        return Response(answer)
+        return Response(answer, status=200)
 
     def post(self, request):
         """Create shortURL and dump to DB"""
@@ -107,9 +108,9 @@ class ShortUrlViewSet(APIView):
         data['ip'] = get_ip_address(request)
         data['counter'] = 0
         if errors:
-            return Response({'errors': errors})
+            return Response({'errors': errors}, status=400)
         data['expireAt'] = datetime.utcnow() + timedelta(
             days=int(expire_at))
         collection.insert_one(data)
         return Response(
-            {'short_url': f'{request.get_host()}/{data["key"]}/'})
+            {'short_url': f'{request.get_host()}/{data["key"]}/'}, status=201)
