@@ -63,7 +63,7 @@ def validation_link(link):
 
 
 def validation_date(date):
-    if all([date.isdigit(), int(date) < 365, int(date) > 1]):
+    if date.isdigit() and all([int(date) < 365, int(date) > 1]):
         return date
 
 
