@@ -10,19 +10,22 @@ Finally you need to connect to Cluster and get from MongoDB connection string li
 Then needed to create .env file in the root of project and fill next fields(example):
 DEBUG=True
 SECRET_KEY=django-insecure-@918ix*mr!#s-1(r*y*e*ys$=9kfdyd!$4ohr492p!jhec0pc0
-MONGO_STRING=mongodb+srv://samartsevihorv:<YOURPASSWORD>@cluster0.ysdzv9e.mongodb.net/test
+MONGO_STRING=mongodb+srv://samartsevihorv:YOURPASSWORD@cluster0.ysdzv9e.mongodb.net/test
 DB_NAME=SHORTENER
 DB_COLLECTION=ShortenerCollection
 
 Then go to projects folder and follow next commands: activate venv, install requirements, 
-create DB and then run server by manage.py or Makefile.
+create DB, indexes and auto-delete, then run server by manage.py or Makefile.
 ```
 $ python3 -m venv venv
 $ source venv/bin/activate
 $ pip install -r requirements.txt
+$ python manage.py create_db
 $ python manage.py runserver (or) $ make r
 ```
-
-
-
+  
+  Functionality to work with API interface is: send request on HOSTNAME:PORT/api/shorter/
+  GET request without parameters returns list of created links by request`s IP address.
+  POST request should contains from required field 'url' with long URL which you like to make shorter and non requered field expireAt with number(!!!) from 1 to 365. This figure means the lifetime (storage of the link on the server) - dafault 90 days.
+  
 
